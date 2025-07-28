@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Dashboard do Professor</title>
+    <style>
+        body { background-color: white; color: black; font-family: sans-serif; }
+        .container { max-width: 800px; margin: 50px auto; text-align: center; }
+        a { color: blue; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bem-vindo(a) à Dashboard do Professor!</h1>
+        <p>Esta é a tela inicial do professor. Você pode começar a desenvolver o conteúdo aqui.</p>
+        <p><a href="{% url 'logout' %}">Sair</a></p>
+    </div>
+</body>
+</html>
