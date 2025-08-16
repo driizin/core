@@ -4,6 +4,9 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from collections import defaultdict
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 from django.utils.timezone import now
 
 from .forms import (
@@ -14,7 +17,7 @@ from .forms import (
     AlunoCreateForm
 )
 
-from core.models import Materia, Turma, CustomUser, ProfessorMateriaTurma, AlunoTurma
+from core.models import Materia, Turma, CustomUser, ProfessorMateriaTurma, AlunoTurma, Nota
 
 
 # === AUTENTICAÇÃO ===
@@ -87,7 +90,6 @@ def alterar_senha(request):
 
     return render(request, 'perfil/alterar_senha.html', {'form': form})
 
-
 # === DASHBOARDS ===
 
 @login_required
@@ -97,14 +99,25 @@ def admin_dashboard_view(request):
         return redirect('login')
     return render(request, 'admin/admin_dashboard.html')
 
-
 @login_required
 def professor_dashboard_view(request):
     if request.user.tipo != 'professor':
-        messages.error(request, "Acesso negado.")
         return redirect('login')
-    return render(request, 'professor/professor_dashboard.html')
 
+    vinculos = ProfessorMateriaTurma.objects.filter(professor=request.user).select_related('materia', 'turma')
+
+    materias_com_turmas = defaultdict(list)
+
+    for v in vinculos:
+        materias_com_turmas[v.materia].append(v.turma)
+
+    materias_com_turmas = dict(materias_com_turmas)
+    
+    print("DEBUG:", materias_com_turmas)
+
+    return render(request, 'professor/professor_dashboard.html', {
+        'materias_com_turmas': materias_com_turmas
+    })
 
 @login_required
 def aluno_dashboard_view(request):
@@ -274,7 +287,6 @@ def ver_perfil(request):
 
 # === ADMIN - ALUNOS ===
 
-
 @login_required
 def gerenciar_alunos(request):
     if request.user.tipo != 'admin':
@@ -381,7 +393,6 @@ def ver_detalhes_aluno(request, aluno_id):
 
 # === ADMIN - TURMAS ===
 
-
 @login_required
 def listar_turmas(request):
     if request.user.tipo != 'admin':
@@ -407,7 +418,6 @@ def detalhar_turma(request, turma_id):
     })
 
 # === ADMIN - MATÉRIAS ===
-
 
 @login_required
 def listar_materias(request):
@@ -442,3 +452,90 @@ def detalhar_materia(request, materia_id):
         'materia': materia,
         'professores_com_turmas': context_data
     })
+
+# === PROFESSOR - TURMAS COM MATÉRIAS ===
+
+@login_required
+def detalhar_turma_professor(request, materia_id, turma_id):
+    if request.user.tipo != 'professor':
+        return redirect('login')
+
+    materia = get_object_or_404(Materia, id=materia_id)
+    turma = get_object_or_404(Turma, id=turma_id)
+
+    vinculado = ProfessorMateriaTurma.objects.filter(
+        professor=request.user,
+        materia=materia,
+        turma=turma
+    ).exists()
+
+    if not vinculado:
+        messages.error(request, "Você não tem permissão para acessar esta turma.")
+        return redirect('professor_dashboard')
+
+    alunos = CustomUser.objects.filter(
+        tipo='aluno',
+        alunoturma__turma=turma
+    ).distinct()
+
+    notas_dict = {
+        nota.aluno.id: nota for nota in Nota.objects.filter(
+            materia=materia,
+            turma=turma,
+            aluno__in=alunos
+        )
+    }
+
+    return render(request, 'professor/detalhar_turma.html', {
+        'materia': materia,
+        'turma': turma,
+        'alunos': alunos,
+        'notas_dict': notas_dict,
+    })
+    
+@login_required
+def ver_turma_professor(request, materia_id, turma_id):
+    if request.user.tipo != 'professor':
+        return redirect('login')
+
+    materia = get_object_or_404(Materia, id=materia_id)
+    turma = get_object_or_404(Turma, id=turma_id)
+
+    if not ProfessorMateriaTurma.objects.filter(
+        professor=request.user,
+        materia=materia,
+        turma=turma
+    ).exists():
+        messages.error(request, "Você não tem acesso a essa turma.")
+        return redirect('professor_dashboard')
+
+    alunos = CustomUser.objects.filter(
+        tipo='aluno',
+        alunoturma__turma=turma
+    ).distinct()
+    
+    notas_dict = {
+        nota.aluno_id: nota
+        for nota in Nota.objects.filter(materia=materia, turma=turma)
+    }
+
+    return render(request, 'professor/detalhar_turma.html', {
+        'materia': materia,
+        'turma': turma,
+        'alunos': alunos,
+        'notas_dict': notas_dict
+    })
+
+@login_required
+def ver_detalhes_aluno_professor(request, aluno_id):
+    if request.user.tipo != 'professor':
+        return redirect('login')
+
+    aluno = get_object_or_404(CustomUser, id=aluno_id, tipo='aluno')
+    turmas = Turma.objects.filter(alunoturma__aluno=aluno)
+
+    return render(request, 'professor/detalhes_aluno.html', {
+        'aluno': aluno,
+        'turmas': turmas
+    })
+    
