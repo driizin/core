@@ -597,3 +597,29 @@ def inserir_nota(request):
         "status": status,
         "badge_class": badge_class
     })
+
+# === ALUNO - BOLETIM ===
+
+@login_required
+def ver_boletim_aluno(request):
+    if request.user.tipo != 'aluno':
+        return redirect('login')
+
+    aluno = request.user
+
+    turmas_ids = AlunoTurma.objects.filter(aluno=aluno).values_list('turma_id', flat=True)
+
+    materias = Materia.objects.filter(turmas__id__in=turmas_ids).distinct()
+
+    boletim = []
+    for materia in materias:
+        nota = Nota.objects.filter(aluno=aluno, materia=materia).first()
+        boletim.append({
+            'materia': materia,
+            'nota': nota
+        })
+
+    return render(request, 'aluno/boletim.html', {
+        'boletim': boletim,
+        'aluno': aluno
+    })
