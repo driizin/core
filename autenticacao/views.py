@@ -122,9 +122,15 @@ def professor_dashboard_view(request):
 @login_required
 def aluno_dashboard_view(request):
     if request.user.tipo != 'aluno':
-        messages.error(request, "Acesso negado.")
         return redirect('login')
-    return render(request, 'aluno/aluno_dashboard.html')
+
+    aluno = request.user
+    notas = Nota.objects.filter(aluno=aluno).select_related('materia', 'turma')
+
+    return render(request, 'aluno/aluno_dashboard.html', {
+        'notas': notas,
+        'aluno': aluno
+    })
 
 
 # === ADMIN - PROFESSORES ===
@@ -583,6 +589,7 @@ def inserir_nota(request):
     except TypeError as e:
         return JsonResponse({"error": f"Erro ao calcular status: {str(e)}"}, status=500)
 
+    # ✅ Status e classe CSS
     status = nota_obj.status_final or "Pendente"
     badge_map = {
         "Aprovado": "bg-success text-white",
