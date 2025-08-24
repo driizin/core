@@ -31,8 +31,6 @@ def professor_dashboard_view(request):
 
     materias_com_turmas = dict(materias_com_turmas)
 
-    print("DEBUG:", materias_com_turmas)
-
     return render(request, 'professor/professor_dashboard.html', {
         'materias_com_turmas': materias_com_turmas
     })
