@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'autenticacao',
+    'administrador',
+    'professor',
+    'aluno',
     'core',
     "widget_tweaks",
 ]
@@ -74,6 +77,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sgde.wsgi.application'
 
+LOGIN_URL = '/login/'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -105,8 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'autenticacao.backends.EmailBackend', # Seu backend customizado
-    'django.contrib.auth.backends.ModelBackend', # Mantenha o backend padrão
+    'autenticacao.backends.EmailBackend',  # Seu backend customizado
+    'django.contrib.auth.backends.ModelBackend',  # Mantenha o backend padrão
 ]
 
 # Internationalization
@@ -134,3 +138,4 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+print(LOGIN_URL)
