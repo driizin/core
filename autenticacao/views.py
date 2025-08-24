@@ -589,7 +589,6 @@ def inserir_nota(request):
     except TypeError as e:
         return JsonResponse({"error": f"Erro ao calcular status: {str(e)}"}, status=500)
 
-    # ✅ Status e classe CSS
     status = nota_obj.status_final or "Pendente"
     badge_map = {
         "Aprovado": "bg-success text-white",

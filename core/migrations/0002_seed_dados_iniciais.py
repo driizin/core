@@ -31,7 +31,7 @@ def criar_materias_turmas(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0001_initial'),  # Certifique-se que isso aponta para sua migração inicial
+        ('core', '0001_initial'),  
     ]
 
     operations = [
