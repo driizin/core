@@ -31,12 +31,25 @@
       <p><strong>Nome:</strong> {{ user.get_full_name }}</p>
       <p><strong>Email:</strong> {{ user.email }}</p>
       <p><strong>Tipo:</strong> {{ user.get_tipo_display }}</p>
-      <p><strong>CPF:</strong> {{ user.cpf }}</p>
-      <p><strong>RG:</strong> {{ user.rg }}</p>
+      {% if user.cpf %}
+      {% with cpf=user.cpf %}
+          <p><strong>CPF:</strong> {{ cpf|slice:":3" }}.{{ cpf|slice:"3:6" }}.{{ cpf|slice:"6:9" }}-{{ cpf|slice:"9:" }}</p>
+        {% endwith %}
+        {% else %}
+          <p><strong>CPF:</strong> None</p>
+        {% endif %}
+
+      {% if user.rg %}  
+      {% with rg=user.rg %}
+          <p><strong>RG:</strong> {{ rg|slice:":2" }}.{{ rg|slice:"2:5" }}.{{ rg|slice:"5:8" }}-{{ rg|slice:"8:" }}</p>
+        {% endwith %}
+        {% else %}
+          <p><strong>RG:</strong> None</p>
+        {% endif %}
       {% if user.data_nascimento %}
-        <p><strong>Data de Nascimento:</strong> {{ user.data_nascimento|date:"d/m/Y" }}</p>
+        <p><strong>RG:</strong> {{ user.data_nascimento|date:"d/m/Y" }}</p>
       {% else %}
-        <p><strong>Data de Nascimento:</strong> <em>Não informado</em></p>
+        <p><strong>Data de Nascimento:</strong> None</p>
       {% endif %}
       <p><strong>Sexo:</strong> {{ user.get_sexo_display }}</p>
       <p><strong>Cor da Pele:</strong> {{ user.get_cor_pele_display }}</p>
