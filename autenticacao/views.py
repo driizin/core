@@ -4,11 +4,9 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
+from collections import defaultdict
 from .forms import EmailAuthenticationForm
-from core.models import Materia, Turma, CustomUser, ProfessorMateriaTurma, AlunoTurma
-
-
-# === AUTENTICAÇÃO ===
+from core.models import CustomUser, ProfessorMateriaTurma, Nota, Turma, AlunoTurma
 
 @login_required
 def redirect_por_tipo(request):
@@ -56,8 +54,44 @@ def logout_view(request):
     messages.info(request, "Você foi desconectado(a).")
     return redirect('login')
 
-# === PERFIL ===
+@login_required
+def admin_dashboard_view(request):
+    if request.user.tipo != 'admin':
+        messages.error(request, "Acesso negado.")
+        return redirect('login')
+    return render(request, 'admin/admin_dashboard.html')
 
+@login_required
+def professor_dashboard_view(request):
+    if request.user.tipo != 'professor':
+        return redirect('login')
+
+    vinculos = ProfessorMateriaTurma.objects.filter(
+        professor=request.user).select_related('materia', 'turma')
+
+    materias_com_turmas = defaultdict(list)
+
+    for v in vinculos:
+        materias_com_turmas[v.materia].append(v.turma)
+
+    materias_com_turmas = dict(materias_com_turmas)
+
+    return render(request, 'professor/professor_dashboard.html', {
+        'materias_com_turmas': materias_com_turmas
+    })
+
+@login_required
+def aluno_dashboard_view(request):
+    if request.user.tipo != 'aluno':
+        return redirect('login')
+
+    aluno = request.user
+    notas = Nota.objects.filter(aluno=aluno).select_related('materia', 'turma')
+
+    return render(request, 'aluno/aluno_dashboard.html', {
+        'notas': notas,
+        'aluno': aluno
+    })
 
 @login_required
 def ver_perfil(request):
