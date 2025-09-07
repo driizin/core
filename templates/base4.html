@@ -11,8 +11,6 @@
   <link id="faviconLink" rel="icon" href="{% static 'assets/icon/icone_preto.ico' %}" type="image/x-icon">
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 
-  {% block styles %}
-  {% endblock styles %}
 </head>
 <body>
 
@@ -46,7 +44,7 @@
         </li>
         <li><hr class="dropdown-divider" /></li>
         <li>
-          <a class="dropdown-item text-warning" href="{% url 'logout' %}">Sair</a>
+          <a class="dropdown-item text-info" href="{% url 'logout' %}">Sair</a>
         </li>
       </ul>
     </div>
