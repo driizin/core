@@ -69,6 +69,7 @@
 {% endblock styles %}
 
 {% block content %}
+<body data-url-inserir-nota="{% url 'inserir_nota' %}">
   <h2 class="mb-4"><strong>{{ materia.nome }}</strong> - <strong>{{ turma.nome }}</strong></h2>
 
   <div class="row">
@@ -195,6 +196,12 @@
         </div>
       </div>
     </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info text-center shadow-sm">
+        Nenhum aluno matriculado nesta matéria.
+      </div>
+    </div>
     {% endfor %}
   </div>
 
@@ -202,6 +209,7 @@
     <img src="{%static 'assets/img/voltar.png'%}" width='20px' height='20px' class="me-2">
       Voltar
   </a>
+</body>
 {% endblock content %}
 
 {% block scripts %}

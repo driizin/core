@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import datetime
 
 
 class CustomUser(AbstractUser):
@@ -49,6 +50,7 @@ class Materia(models.Model):
     nome = models.CharField(max_length=100)
     professores = models.ManyToManyField(CustomUser, limit_choices_to={'tipo': 'professor'})
     turmas = models.ManyToManyField(Turma)
+    ch = models.IntegerField(default=20)  
 
     def __str__(self):
         return self.nome
@@ -68,12 +70,30 @@ class ProfessorMateriaTurma(models.Model):
 class AlunoTurma(models.Model):
     aluno = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'tipo': 'aluno'})
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
+    data_matricula = models.DateField(auto_now_add=True)
+    ano_letivo = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
         unique_together = ('aluno', 'turma')
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            hoje = datetime.date.today()
+
+            ano_letivo_base = hoje.year
+            if hoje.month <= 6:
+                ano_letivo_base = hoje.year - 1
+                semestre = 1
+            else:
+                ano_letivo_base = hoje.year
+                semestre = 2
+
+            self.ano_letivo = f"{ano_letivo_base}.{semestre}"
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.aluno.get_full_name()} - {self.turma.nome}"
+        return f"{self.aluno.get_full_name()} - {self.turma.nome} ({self.ano_letivo})"
 
 
 class Nota(models.Model):

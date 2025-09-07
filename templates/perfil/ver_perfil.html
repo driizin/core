@@ -56,7 +56,7 @@
 
       {% if turmas %}
         <hr>
-        <p><strong>Turmas:</strong></p>
+        <p><strong>Turma:</strong></p>
         <ul>
           {% for turma in turmas %}
             <li>{{ turma.nome }}</li>
@@ -66,7 +66,7 @@
 
       {% if vinculos %}
         <hr>
-        <p><strong>Matérias e Turmas:</strong></p>
+        <p><strong>Matéria(s) e Turma(s):</strong></p>
         <ul>
           {% for v in vinculos %}
             <li>{{ v.materia.nome }} — {{ v.turma.nome }}</li>

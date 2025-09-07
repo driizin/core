@@ -57,6 +57,11 @@
       .dropdown-menu {
         --bs-dropdown-link-active-bg: #b4c3cd; 
       }
+
+      .form-control:focus {
+        border-color: #b4c3cd; 
+        box-shadow: 0 0 0 0.25rem rgba(180, 195, 205, 0.25); 
+      }
     </style>
 {% endblock styles %}
 
@@ -91,7 +96,7 @@
           </div>
           <div class="col-md-6 mb-3">
             <label>Data nascimento</label>
-            {{ form.data_nascimento|add_class:"form-control" }}
+            {{ form.data_nascimento|add_class:"form-control"|attr:"id:id_data_nascimento" }}
           </div>
           <div class="col-md-6 mb-3">
             <label>Cor da Pele</label>

@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from collections import defaultdict
 from .forms import EmailAuthenticationForm
 from core.models import CustomUser, ProfessorMateriaTurma, Nota, Turma, AlunoTurma
+from core.decorators import role_required
 
 @login_required
 def redirect_por_tipo(request):
@@ -55,36 +56,26 @@ def logout_view(request):
     return redirect('login')
 
 @login_required
+@role_required('admin')
 def admin_dashboard_view(request):
-    if request.user.tipo != 'admin':
-        messages.error(request, "Acesso negado.")
-        return redirect('login')
     return render(request, 'admin/admin_dashboard.html')
 
 @login_required
+@role_required('professor')
 def professor_dashboard_view(request):
-    if request.user.tipo != 'professor':
-        return redirect('login')
-
-    vinculos = ProfessorMateriaTurma.objects.filter(
-        professor=request.user).select_related('materia', 'turma')
+    vinculos = ProfessorMateriaTurma.objects.filter(professor=request.user).select_related('materia', 'turma')
 
     materias_com_turmas = defaultdict(list)
-
     for v in vinculos:
         materias_com_turmas[v.materia].append(v.turma)
 
-    materias_com_turmas = dict(materias_com_turmas)
-
     return render(request, 'professor/professor_dashboard.html', {
-        'materias_com_turmas': materias_com_turmas
+        'materias_com_turmas': dict(materias_com_turmas)
     })
 
 @login_required
+@role_required('aluno')
 def aluno_dashboard_view(request):
-    if request.user.tipo != 'aluno':
-        return redirect('login')
-
     aluno = request.user
     notas = Nota.objects.filter(aluno=aluno).select_related('materia', 'turma')
 
@@ -113,11 +104,8 @@ def ver_perfil(request):
 
 
 @login_required
+@role_required('professor', 'aluno')
 def alterar_senha(request):
-    if request.user.tipo not in ['professor', 'aluno']:
-        messages.error(request, "Acesso negado.")
-        return redirect('ver_perfil')
-
     if request.method == 'POST':
         form = PasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
