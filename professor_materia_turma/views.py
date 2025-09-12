@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from core.models import (
     Materia,
     Turma,
-    CustomUser,
+    Usuario,
     ProfessorMateriaTurma,
     Nota
 )
@@ -24,7 +24,7 @@ def detalhar_turma_professor(request, materia_id, turma_id):
         messages.error(request, "Você não tem permissão para acessar esta turma.")
         return redirect('professor_dashboard')
 
-    alunos = CustomUser.objects.filter(tipo='aluno', alunoturma__turma=turma).distinct()
+    alunos = Usuario.objects.filter(tipo='aluno', alunoturma__turma=turma).distinct()
     notas_dict = {nota.aluno.id: nota for nota in Nota.objects.filter(materia=materia, turma=turma, aluno__in=alunos)}
 
     return render(request, 'professor/detalhar_turma.html', {
@@ -45,7 +45,7 @@ def ver_turma_professor(request, materia_id, turma_id):
         messages.error(request, "Você não tem acesso a essa turma.")
         return redirect('professor_dashboard')
 
-    alunos = CustomUser.objects.filter(tipo='aluno', alunoturma__turma=turma).distinct()
+    alunos = Usuario.objects.filter(tipo='aluno', alunoturma__turma=turma).distinct()
     notas_dict = {nota.aluno_id: nota for nota in Nota.objects.filter(materia=materia, turma=turma)}
 
     return render(request, 'professor/detalhar_turma.html', {
@@ -59,6 +59,6 @@ def ver_turma_professor(request, materia_id, turma_id):
 @login_required
 @role_required('professor')
 def ver_detalhes_aluno_professor(request, aluno_id):
-    aluno = get_object_or_404(CustomUser, id=aluno_id, tipo='aluno')
+    aluno = get_object_or_404(Usuario, id=aluno_id, tipo='aluno')
     turmas = Turma.objects.filter(alunoturma__aluno=aluno)
     return render(request, 'professor/detalhes_aluno.html', {'aluno': aluno, 'turmas': turmas})

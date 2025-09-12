@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from core.models import CustomUser, Materia, Turma, Nota, AlunoTurma
+from core.models import Usuario, Materia, Turma, Nota, AlunoTurma
 from core.decorators import role_required
 
 @login_required
@@ -16,7 +16,7 @@ def inserir_nota(request):
     materia_id = request.POST.get("materia_id")
     turma_id = request.POST.get("turma_id")
 
-    aluno = get_object_or_404(CustomUser, id=aluno_id)
+    aluno = get_object_or_404(Usuario, id=aluno_id)
     materia = get_object_or_404(Materia, id=materia_id)
     turma = get_object_or_404(Turma, id=turma_id)
 

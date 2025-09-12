@@ -2,11 +2,9 @@
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import authenticate
 from django.forms import modelformset_factory, BaseModelFormSet
-from core.models import Materia, Turma, ProfessorMateriaTurma, AlunoTurma
-
-CustomUser = get_user_model()
+from core.models import Materia, Turma, ProfessorMateriaTurma, AlunoTurma, Usuario 
 
 
 class EmailAuthenticationForm(AuthenticationForm):
@@ -48,7 +46,7 @@ class ProfessorCreateForm(forms.ModelForm):
     sexo = forms.ChoiceField(choices=sexo_choices, label='Sexo')
 
     class Meta:
-        model = CustomUser
+        model = Usuario  
         fields = [
             'first_name', 'last_name',
             'data_nascimento', 'cor_pele',
@@ -64,8 +62,17 @@ class ProfessorCreateForm(forms.ModelForm):
         return ''.join(filter(str.isdigit, rg))
 
     def save(self, commit=True):
-        professor = super().save(commit=commit)
+        professor = super().save(commit=False)
+        professor.tipo = 'professor'  # Defina o tipo como professor
+        professor.username = professor.cpf  # Use CPF como username
+        professor.email = f"{professor.cpf}@docente.com"
+        professor.set_password("Senha123#")  # Defina uma senha padrão
+        professor.senha_temporaria = True
+        
+        if commit:
+            professor.save()
         return professor
+
 
 class ProfessorMateriaTurmaForm(forms.ModelForm):
     class Meta:
@@ -90,6 +97,7 @@ ProfessorMateriaTurmaFormSet = modelformset_factory(
     formset=RequiredIdFormSet 
 )
 
+
 class AlunoCreateForm(forms.ModelForm):
     cor_pele_choices = [
         ('branca', 'Branca'),
@@ -111,14 +119,14 @@ class AlunoCreateForm(forms.ModelForm):
         widget=forms.RadioSelect,
         label='Turma'
     )
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.data_nascimento:
             self.initial['data_nascimento'] = self.instance.data_nascimento.strftime('%d/%m/%Y')
 
-
     class Meta:
-        model = CustomUser
+        model = Usuario  
         fields = [
             'first_name', 'last_name',
             'data_nascimento', 'cor_pele',

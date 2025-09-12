@@ -6,7 +6,7 @@ from autenticacao.forms import (
     ProfessorCreateForm,
     ProfessorMateriaTurmaFormSet
 )
-from core.models import Materia, CustomUser, ProfessorMateriaTurma, Turma
+from core.models import Materia, Usuario, ProfessorMateriaTurma, Turma
 from core.decorators import role_required
 
 @login_required
@@ -35,14 +35,14 @@ def detalhar_materia(request, materia_id):
 @login_required
 @role_required('admin')
 def gerenciar_professores(request):
-    professores = CustomUser.objects.filter(tipo='professor')
+    professores = Usuario.objects.filter(tipo='professor')
     return render(request, 'admin/professor_crud/gerenciar_professores.html', {'professores': professores})
 
 
 @login_required
 @role_required('admin')
 def ver_detalhes_professor(request, professor_id):
-    professor = get_object_or_404(CustomUser, id=professor_id, tipo='professor')
+    professor = get_object_or_404(Usuario, id=professor_id, tipo='professor')
     vinculos = ProfessorMateriaTurma.objects.filter(professor=professor)
 
     return render(request, 'admin/professor_crud/detalhes_professor.html', {
@@ -93,7 +93,7 @@ def cadastrar_professor(request):
 @login_required
 @role_required('admin')
 def editar_professor(request, professor_id):
-    professor = get_object_or_404(CustomUser, id=professor_id, tipo='professor')
+    professor = get_object_or_404(Usuario, id=professor_id, tipo='professor')
 
     formset = ProfessorMateriaTurmaFormSet(
         request.POST or None,
@@ -126,7 +126,7 @@ def editar_professor(request, professor_id):
 @login_required
 @role_required('admin')
 def remover_professor(request, professor_id):
-    professor = get_object_or_404(CustomUser, id=professor_id, tipo='professor')
+    professor = get_object_or_404(Usuario, id=professor_id, tipo='professor')
 
     if request.method == 'POST':
         professor.delete()

@@ -1,10 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 import datetime
 
-
-class CustomUser(AbstractUser):
-
+class Usuario(User):
     TIPO_CHOICES = (
         ('admin', 'Admin'),
         ('professor', 'Professor'),
@@ -12,29 +10,33 @@ class CustomUser(AbstractUser):
     )
 
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default='admin')
-
     data_nascimento = models.DateField(null=True, blank=True)
     cpf = models.CharField(max_length=14, unique=True, null=True, blank=True)
     rg = models.CharField(max_length=12, unique=True, null=True, blank=True)
+    
     SEXO_CHOICES = [
-    ('M', 'Masculino'),
-    ('F', 'Feminino'),
-]
-
+        ('M', 'Masculino'),
+        ('F', 'Feminino'),
+    ]
+    
     COR_PELE_CHOICES = [
-    ('branca', 'Branca'),
-    ('preta', 'Preta'),
-    ('parda', 'Parda'),
-    ('amarela', 'Amarela'),
-    ('indigena', 'Indígena'),
-]
-
+        ('branca', 'Branca'),
+        ('preta', 'Preta'),
+        ('parda', 'Parda'),
+        ('amarela', 'Amarela'),
+        ('indigena', 'Indígena'),
+    ]
+    
     sexo = models.CharField(max_length=1, choices=SEXO_CHOICES, null=True, blank=True)
     cor_pele = models.CharField(max_length=20, choices=COR_PELE_CHOICES, null=True, blank=True)
-
-
     senha_temporaria = models.BooleanField(default=False)
 
+    class Meta:
+        db_table = "usuarios_usuarios"
+        app_label = 'core'  
+        permissions = [
+            ("detail_usuario", "Pode ver o detalhe de usuário"),
+        ]
     def __str__(self):
         return f"{self.get_full_name()} ({self.tipo})"
 
@@ -48,15 +50,16 @@ class Turma(models.Model):
 
 class Materia(models.Model):
     nome = models.CharField(max_length=100)
-    professores = models.ManyToManyField(CustomUser, limit_choices_to={'tipo': 'professor'})
+    professores = models.ManyToManyField(Usuario, limit_choices_to={'tipo': 'professor'})
     turmas = models.ManyToManyField(Turma)
-    ch = models.IntegerField(default=20)  
+    ch = models.IntegerField(default=20)
 
     def __str__(self):
         return self.nome
 
+
 class ProfessorMateriaTurma(models.Model):
-    professor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'tipo': 'professor'})
+    professor = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'tipo': 'professor'})
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE)
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
 
@@ -68,7 +71,7 @@ class ProfessorMateriaTurma(models.Model):
 
 
 class AlunoTurma(models.Model):
-    aluno = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'tipo': 'aluno'})
+    aluno = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'tipo': 'aluno'})
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
     data_matricula = models.DateField(auto_now_add=True)
     ano_letivo = models.CharField(max_length=10, blank=True, null=True)
@@ -79,7 +82,6 @@ class AlunoTurma(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             hoje = datetime.date.today()
-
             ano_letivo_base = hoje.year
             if hoje.month <= 6:
                 ano_letivo_base = hoje.year - 1
@@ -87,9 +89,7 @@ class AlunoTurma(models.Model):
             else:
                 ano_letivo_base = hoje.year
                 semestre = 2
-
             self.ano_letivo = f"{ano_letivo_base}.{semestre}"
-
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -97,20 +97,17 @@ class AlunoTurma(models.Model):
 
 
 class Nota(models.Model):
-    aluno = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'tipo': 'aluno'})
+    aluno = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'tipo': 'aluno'})
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE)
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
-
+    
     nota_1_semestre1 = models.FloatField(null=True, blank=True)
     nota_2_semestre1 = models.FloatField(null=True, blank=True)
     paralela_1 = models.FloatField(null=True, blank=True)
-
     nota_1_semestre2 = models.FloatField(null=True, blank=True)
     nota_2_semestre2 = models.FloatField(null=True, blank=True)
     paralela_2 = models.FloatField(null=True, blank=True)
-
     nota_recuperacao = models.FloatField(null=True, blank=True)
-
     status_final = models.CharField(max_length=30, blank=True)
 
     def calcular_status(self):

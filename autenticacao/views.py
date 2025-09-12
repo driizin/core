@@ -6,23 +6,38 @@ from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from collections import defaultdict
 from .forms import EmailAuthenticationForm
-from core.models import CustomUser, ProfessorMateriaTurma, Nota, Turma, AlunoTurma
+from core.models import Usuario, ProfessorMateriaTurma, Nota, Turma, AlunoTurma
 from core.decorators import role_required
 
 @login_required
 def redirect_por_tipo(request):
-    if request.user.tipo == 'admin':
-        return redirect('admin_dashboard')
-    elif request.user.tipo == 'professor':
-        return redirect('professor_dashboard')
-    elif request.user.tipo == 'aluno':
-        return redirect('aluno_dashboard')
+    # CORREÇÃO: Acesse o tipo através do profile
+    if hasattr(request.user, 'profile'):
+        if request.user.profile.tipo == 'admin':
+            return redirect('admin_dashboard')
+        elif request.user.profile.tipo == 'professor':
+            return redirect('professor_dashboard')
+        elif request.user.profile.tipo == 'aluno':
+            return redirect('aluno_dashboard')
+    # Se não tem profile, redireciona para login
     return redirect('login')
 
-
 def login_view(request):
+    # CORREÇÃO: Verificação correta para evitar loop
     if request.user.is_authenticated:
-        return redirect_por_tipo(request)
+        # Se já está autenticado, redireciona baseado no tipo
+        if hasattr(request.user, 'profile'):
+            if request.user.profile.tipo == 'admin':
+                return redirect('admin_dashboard')
+            elif request.user.profile.tipo == 'professor':
+                return redirect('professor_dashboard')
+            elif request.user.profile.tipo == 'aluno':
+                return redirect('aluno_dashboard')
+        # Se autenticado mas sem profile, faz logout e mostra erro
+        logout(request)
+        messages.error(request, "Perfil de usuário não configurado. Entre em contato com o administrador.")
+        return redirect('login')
+    
     if request.method == 'POST':
         form = EmailAuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -33,13 +48,18 @@ def login_view(request):
                 login(request, user)
                 messages.success(
                     request, f"Bem-vindo(a), {user.first_name or user.email}")
-                if user.tipo == 'admin':
-                    return redirect('admin_dashboard')
-                elif user.tipo == 'professor':
-                    return redirect('professor_dashboard')
-                elif user.tipo == 'aluno':
-                    return redirect('aluno_dashboard')
-                messages.warning(request, "Tipo de usuário não reconhecido.")
+                
+                # CORREÇÃO: Acesse o tipo através do profile
+                if hasattr(user, 'profile'):
+                    if user.profile.tipo == 'admin':
+                        return redirect('admin_dashboard')
+                    elif user.profile.tipo == 'professor':
+                        return redirect('professor_dashboard')
+                    elif user.profile.tipo == 'aluno':
+                        return redirect('aluno_dashboard')
+                
+                messages.warning(request, "Tipo de usuário não reconhecido ou profile não configurado.")
+                logout(request)  # Desloga se não tem profile
                 return redirect('login')
             else:
                 messages.error(request, "Email ou senha inválidos.")
@@ -48,7 +68,6 @@ def login_view(request):
     else:
         form = EmailAuthenticationForm()
     return render(request, 'login.html', {'form': form})
-
 
 def logout_view(request):
     logout(request)
@@ -90,18 +109,19 @@ def ver_perfil(request):
     turmas = []
     vinculos = []
 
-    if user.tipo == 'aluno':
-        turmas = Turma.objects.filter(alunoturma__aluno=user)
-    elif user.tipo == 'professor':
-        vinculos = ProfessorMateriaTurma.objects.filter(
-            professor=user).select_related('materia', 'turma')
+    # CORREÇÃO: Acesse o tipo através do profile
+    if hasattr(user, 'profile'):
+        if user.profile.tipo == 'aluno':
+            turmas = Turma.objects.filter(alunoturma__aluno=user)
+        elif user.profile.tipo == 'professor':
+            vinculos = ProfessorMateriaTurma.objects.filter(
+                professor=user).select_related('materia', 'turma')
 
     return render(request, 'perfil/ver_perfil.html', {
         'user': user,
         'turmas': turmas,
         'vinculos': vinculos
     })
-
 
 @login_required
 @role_required('professor', 'aluno')
@@ -111,8 +131,12 @@ def alterar_senha(request):
         if form.is_valid():
             user = form.save()
             print(f"[LOG] Senha alterada por: {user.username} em {now()}")
-            user.senha_temporaria = False
-            user.save()
+            
+            # CORREÇÃO: Acesse o profile para alterar senha_temporaria
+            if hasattr(user, 'profile'):
+                user.profile.senha_temporaria = False
+                user.profile.save()
+            
             update_session_auth_hash(request, user)
             messages.success(request, "Senha atualizada com sucesso.")
             return redirect('ver_perfil')

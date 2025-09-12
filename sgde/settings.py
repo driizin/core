@@ -60,7 +60,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'sgde.urls'
 
-AUTH_USER_MODEL = 'core.CustomUser'
 
 TEMPLATES = [
     {

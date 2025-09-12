@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from core.models import CustomUser, Turma, AlunoTurma
+from core.models import Usuario, Turma, AlunoTurma
 from autenticacao.forms import AlunoCreateForm
 from core.decorators import role_required
 
 @login_required
 @role_required('admin')
 def gerenciar_alunos(request):
-    alunos = CustomUser.objects.filter(tipo='aluno').prefetch_related('alunoturma_set__turma')
+    alunos = Usuario.objects.filter(tipo='aluno').prefetch_related('alunoturma_set__turma')
     return render(request, 'admin/aluno_crud/gerenciar_alunos.html', {'alunos': alunos})
 
 
@@ -41,7 +41,7 @@ def cadastrar_aluno(request):
 @login_required
 @role_required('admin')
 def editar_aluno(request, aluno_id):
-    aluno = get_object_or_404(CustomUser, id=aluno_id, tipo='aluno')
+    aluno = get_object_or_404(Usuario, id=aluno_id, tipo='aluno')
     turma_atual = AlunoTurma.objects.filter(aluno=aluno).first()
 
     form = AlunoCreateForm(
@@ -63,7 +63,7 @@ def editar_aluno(request, aluno_id):
 @login_required
 @role_required('admin')
 def remover_aluno(request, aluno_id):
-    aluno = get_object_or_404(CustomUser, id=aluno_id, tipo='aluno')
+    aluno = get_object_or_404(Usuario, id=aluno_id, tipo='aluno')
 
     if request.method == 'POST':
         aluno.delete()
@@ -76,6 +76,6 @@ def remover_aluno(request, aluno_id):
 @login_required
 @role_required('admin')
 def ver_detalhes_aluno(request, aluno_id):
-    aluno = get_object_or_404(CustomUser, id=aluno_id, tipo='aluno')
+    aluno = get_object_or_404(Usuario, id=aluno_id, tipo='aluno')
     turmas = Turma.objects.filter(alunoturma__aluno=aluno)
     return render(request, 'admin/aluno_crud/detalhes_aluno.html', {'aluno': aluno, 'turmas': turmas})
