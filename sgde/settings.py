@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'autenticacao',
-    'core', 
+    'core',
     'materia',
     'turma',
     'professor_materia_turma',
