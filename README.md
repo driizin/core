@@ -97,4 +97,9 @@ Certifique-se de ter os seguintes softwares instalados antes de iniciar:
 
     * Abra seu navegador e acesse esse endereço.
 
+### Apresentação do CORE
+<br>
+<div align="center"><img src="https://github.com/user-attachments/assets/4d49827a-d640-4a2c-ad99-b84eb51ee60e" width="600" height="600"/></a><a href="https://youtu.be/7UvogPe2O1E"></a></div>
+
+
 
