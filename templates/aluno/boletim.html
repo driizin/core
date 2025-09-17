@@ -52,14 +52,14 @@
                 {% if item.nota.status_final == "Aprovado" %}
                   <span class="badge bg-success text-white">{{ item.nota.status_final }}</span>
                 {% elif item.nota.status_final == "Reprovado na Final" %}
-                  <span class="badge bg-danger text-white">{{ item.nota.status_final }}</span>
+                  <span class="badge bg-info text-white">{{ item.nota.status_final }}</span>
                 {% elif item.nota.status_final == "Reprovado" %}
-                  <span class="badge bg-danger-subtle text-black">{{ item.nota.status_final }}</span>
+                  <span class="badge bg-info-subtle text-black">{{ item.nota.status_final }}</span>
                 {% else %}
                   <span class="badge bg-secondary">{{ item.nota.status_final }}</span>
                 {% endif %}
               {% else %}
-                <span class="badge bg-body text-black">Pendente</span>
+                <span class="badge bg-body text-white">Pendente</span>
               {% endif %}
             {% endwith %}{% endwith %}{% endwith %}{% endwith %}
           {% else %}

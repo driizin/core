@@ -23,7 +23,7 @@
           <p><strong>RG:</strong> None</p>
         {% endif %}
       {% if user.data_nascimento %}
-        <p><strong>RG:</strong> {{ user.data_nascimento|date:"d/m/Y" }}</p>
+        <p><strong>Data de Nascimento:</strong> {{ user.data_nascimento|date:"d/m/Y" }}</p>
       {% else %}
         <p><strong>Data de Nascimento:</strong> None</p>
       {% endif %}
